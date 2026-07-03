@@ -273,18 +273,18 @@ export default function DigitalClock() {
           transition={{ type: "spring", stiffness: 100 }}
         >
           {/* On very small screens, show HH:MM stacked with seconds below */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
             {/* Main time row */}
             <div className="flex items-baseline gap-1 sm:gap-2 md:gap-4">
               {/* Hours */}
-              <div className="flex text-[3.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
+              <div className="flex text-[4.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
                 <TimeDigit digit={hours[0]} theme={theme} />
                 <TimeDigit digit={hours[1]} theme={theme} />
               </div>
 
               {/* Separator */}
               <motion.span
-                className={`text-3xl sm:text-5xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin leading-none`}
+                className={`text-4xl sm:text-5xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin leading-none`}
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
               >
@@ -292,22 +292,24 @@ export default function DigitalClock() {
               </motion.span>
 
               {/* Minutes */}
-              <div className="flex text-[3.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
+              <div className="flex text-[4.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
                 <TimeDigit digit={minutes[0]} theme={theme} />
                 <TimeDigit digit={minutes[1]} theme={theme} />
               </div>
+            </div>
 
-              {/* Separator */}
-              <motion.span
-                className={`text-3xl sm:text-5xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin leading-none`}
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-              >
-                {theme.separator}
-              </motion.span>
+            {/* Separator for desktop/tablet */}
+            <motion.span
+              className={`hidden sm:block text-5xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin leading-none`}
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+            >
+              {theme.separator}
+            </motion.span>
 
-              {/* Seconds */}
-              <div className="flex text-[3.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
+            {/* Seconds */}
+            <div className="flex items-baseline">
+              <div className="flex text-5xl sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none opacity-80 sm:opacity-100 mt-2 sm:mt-0">
                 <TimeDigit digit={seconds[0]} theme={theme} />
                 <TimeDigit digit={seconds[1]} theme={theme} />
               </div>
