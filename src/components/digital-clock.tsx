@@ -125,7 +125,7 @@ function FloatingParticle({ color, index }: { color: string; index: number }) {
       }}
       animate={{
         y: [0, -height * 1.2],
-        x: [0, Math.sin(index) * 100],
+        x: [0, Math.sin(index) * 60],
         opacity: [0, 0.8, 0],
       }}
       transition={{
@@ -150,9 +150,9 @@ function TimeDigit({
       <AnimatePresence mode="popLayout">
         <motion.span
           key={digit}
-          initial={{ y: 40, opacity: 0, filter: "blur(8px)" }}
+          initial={{ y: 30, opacity: 0, filter: "blur(6px)" }}
           animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-          exit={{ y: -40, opacity: 0, filter: "blur(8px)" }}
+          exit={{ y: -30, opacity: 0, filter: "blur(6px)" }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
           className={`inline-block ${theme.textColor} ${theme.fontStyle}`}
         >
@@ -167,8 +167,13 @@ export default function DigitalClock() {
   const [time, setTime] = useState(new Date());
   const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const theme = themes[currentThemeIndex];
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -196,8 +201,14 @@ export default function DigitalClock() {
     day: "numeric",
   });
 
+  if (!isMounted) {
+    return (
+      <div className="relative w-full h-dvh overflow-hidden select-none bg-[#0a0a1a]" />
+    );
+  }
+
   return (
-    <div className="relative w-full h-screen overflow-hidden select-none">
+    <div className="relative w-full h-dvh overflow-hidden select-none">
       {/* Background transition */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -212,14 +223,14 @@ export default function DigitalClock() {
 
       {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {Array.from({ length: 15 }).map((_, i) => (
           <FloatingParticle key={`${theme.name}-${i}`} color={theme.particleColor} index={i} />
         ))}
       </div>
 
-      {/* Ambient glow */}
+      {/* Ambient glow - smaller on mobile */}
       <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full opacity-20 blur-[80px] md:blur-[120px]"
         style={{
           background: theme.name === "minimal"
             ? "radial-gradient(circle, rgba(120,120,120,0.3), transparent)"
@@ -244,10 +255,10 @@ export default function DigitalClock() {
       />
 
       {/* Main clock content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full">
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4">
         {/* Date display */}
         <motion.p
-          className={`text-sm md:text-base tracking-[0.3em] uppercase mb-8 ${theme.accentColor} opacity-70`}
+          className={`text-[10px] sm:text-xs md:text-base tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-4 sm:mb-8 ${theme.accentColor} opacity-70 text-center`}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 0.7, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -255,46 +266,52 @@ export default function DigitalClock() {
           {dateStr}
         </motion.p>
 
-        {/* Time display */}
+        {/* Time display - portrait friendly layout */}
         <motion.div
-          className="flex items-center gap-2 md:gap-4"
+          className="flex items-center justify-center w-full"
           layout
           transition={{ type: "spring", stiffness: 100 }}
         >
-          {/* Hours */}
-          <div className="flex text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight">
-            <TimeDigit digit={hours[0]} theme={theme} />
-            <TimeDigit digit={hours[1]} theme={theme} />
-          </div>
+          {/* On very small screens, show HH:MM stacked with seconds below */}
+          <div className="flex flex-col items-center">
+            {/* Main time row */}
+            <div className="flex items-baseline gap-1 sm:gap-2 md:gap-4">
+              {/* Hours */}
+              <div className="flex text-[3.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
+                <TimeDigit digit={hours[0]} theme={theme} />
+                <TimeDigit digit={hours[1]} theme={theme} />
+              </div>
 
-          {/* Separator */}
-          <motion.span
-            className={`text-5xl sm:text-6xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin`}
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            {theme.separator}
-          </motion.span>
+              {/* Separator */}
+              <motion.span
+                className={`text-3xl sm:text-5xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin leading-none`}
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                {theme.separator}
+              </motion.span>
 
-          {/* Minutes */}
-          <div className="flex text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight">
-            <TimeDigit digit={minutes[0]} theme={theme} />
-            <TimeDigit digit={minutes[1]} theme={theme} />
-          </div>
+              {/* Minutes */}
+              <div className="flex text-[3.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
+                <TimeDigit digit={minutes[0]} theme={theme} />
+                <TimeDigit digit={minutes[1]} theme={theme} />
+              </div>
 
-          {/* Separator */}
-          <motion.span
-            className={`text-5xl sm:text-6xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin`}
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-          >
-            {theme.separator}
-          </motion.span>
+              {/* Separator */}
+              <motion.span
+                className={`text-3xl sm:text-5xl md:text-8xl lg:text-9xl ${theme.accentColor} font-thin leading-none`}
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+              >
+                {theme.separator}
+              </motion.span>
 
-          {/* Seconds */}
-          <div className="flex text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight">
-            <TimeDigit digit={seconds[0]} theme={theme} />
-            <TimeDigit digit={seconds[1]} theme={theme} />
+              {/* Seconds */}
+              <div className="flex text-[3.5rem] sm:text-7xl md:text-[10rem] lg:text-[12rem] font-thin tracking-tight leading-none">
+                <TimeDigit digit={seconds[0]} theme={theme} />
+                <TimeDigit digit={seconds[1]} theme={theme} />
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -302,47 +319,49 @@ export default function DigitalClock() {
         <AnimatePresence mode="wait">
           <motion.div
             key={theme.name}
-            className="mt-10 text-center"
+            className="mt-6 sm:mt-10 text-center"
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
             transition={{ duration: 0.5 }}
           >
-            <p className={`text-lg md:text-xl tracking-[0.2em] ${theme.accentColor} font-light`}>
+            <p className={`text-sm sm:text-lg md:text-xl tracking-[0.15em] sm:tracking-[0.2em] ${theme.accentColor} font-light`}>
               {theme.mood}
             </p>
           </motion.div>
         </AnimatePresence>
 
-        {/* Theme switcher */}
+        {/* Theme switcher - scrollable on mobile */}
         <motion.div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-wrap justify-center gap-3 px-4"
+          className="absolute bottom-6 sm:bottom-10 left-0 right-0 flex justify-center px-3 sm:px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          {themes.map((t, index) => (
-            <motion.button
-              key={t.name}
-              onClick={() => switchTheme(index)}
-              className={`relative px-4 py-2 rounded-full text-xs md:text-sm tracking-wider transition-all duration-300 ${
-                index === currentThemeIndex
-                  ? `${theme.textColor} border border-current opacity-100`
-                  : `${theme.textColor} opacity-40 hover:opacity-70 border border-transparent`
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {index === currentThemeIndex && (
-                <motion.div
-                  className={`absolute inset-0 rounded-full ${theme.particleColor}`}
-                  layoutId="activeTheme"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{t.label}</span>
-            </motion.button>
-          ))}
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-full">
+            {themes.map((t, index) => (
+              <motion.button
+                key={t.name}
+                onClick={() => switchTheme(index)}
+                className={`relative px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs md:text-sm tracking-wider transition-all duration-300 ${
+                  index === currentThemeIndex
+                    ? `${theme.textColor} border border-current opacity-100`
+                    : `${theme.textColor} opacity-40 hover:opacity-70 border border-transparent`
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {index === currentThemeIndex && (
+                  <motion.div
+                    className={`absolute inset-0 rounded-full ${theme.particleColor}`}
+                    layoutId="activeTheme"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{t.label}</span>
+              </motion.button>
+            ))}
+          </div>
         </motion.div>
       </div>
     </div>
